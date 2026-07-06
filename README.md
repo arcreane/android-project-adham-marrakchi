@@ -2,7 +2,9 @@
 
 # QuizArena — Battle Royale de culture générale
 
-> Étudiant : **Adham Marrakchi** ([@AdaMakchi](https://github.com/AdaMakchi))
+Étudiants :
+- BENALLAL Ghizlane (@gh832) — Frontend
+- MARRAKCHI Adham (@AdaMakchi) — Backend
 
 Projet multijoueur (2 à 8 joueurs) réalisé d'après le [cahier des charges](docs/Cahier_des_charges_QuizArena.docx) :
 un quiz à élimination progressive, en manches synchronisées de 15 secondes,
