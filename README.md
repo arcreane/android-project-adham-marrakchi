@@ -162,3 +162,17 @@ docs/
 Le backend PHP implémente le contrat décrit dans `docs/openapi.yaml`. La
 réécriture **Spring Boot** devra exposer exactement le même contrat (routes,
 enveloppe `data`/`error`, codes HTTP) : le client JavaFX ne change pas.
+## Répartition du travail
+
+### Frontend
+- BENALLAL Ghizlane (@gh832)
+- Interfaces JavaFX
+- Navigation entre les écrans
+- Intégration des appels API côté client
+
+### Backend
+- MARRAKCHI Adham (@AdaMakchi)
+- API REST PHP
+- Base de données MySQL
+- Authentification
+- Logique métier
