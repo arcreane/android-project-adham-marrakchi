@@ -29,7 +29,7 @@ public class HistoryController implements Navigator.Screen {
 
     @FXML
     public void initialize() {
-        historyTable.setPlaceholder(new Label("Aucune partie terminée pour le moment."));
+        historyTable.setPlaceholder(new Label("Vous n'avez encore terminé aucune partie. Jouez une partie pour voir votre historique."));
         dateColumn.setCellValueFactory(cell ->
                 new ReadOnlyObjectWrapper<>(Ui.formatDate(cell.getValue().endedAt())));
         categoryColumn.setCellValueFactory(cell ->
