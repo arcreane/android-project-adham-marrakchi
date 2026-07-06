@@ -1,0 +1,58 @@
+# ============================================================
+# QuizArena — pile backend conteneurisée (MySQL + API PHP)
+#
+#   docker compose up -d --build      démarre la base + l'API sur :8085
+#   docker compose --profile test run --rm smoke
+#                                     joue une partie de test bout en bout
+#   docker compose down               arrête tout (-v pour vider la base)
+#
+# Le client JavaFX reste natif (application de bureau) et pointe sur
+# http://127.0.0.1:8085/api/v1 — aucune configuration à changer.
+# ============================================================
+
+name: quizarena
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: quizarena-root
+    volumes:
+      # Schéma + 60 questions chargés automatiquement au premier démarrage.
+      - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/sql/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - db-data:/var/lib/mysql
+    ports:
+      - "3307:3306" # inspection facultative (HeidiSQL/Workbench), 3307 pour ne pas gêner un MySQL local
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pquizarena-root"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: ./backend
+    ports:
+      - "8085:8085"
+    environment:
+      QUIZARENA_DB_HOST: db
+      QUIZARENA_DB_PORT: "3306"
+      QUIZARENA_DB_NAME: quizarena
+      QUIZARENA_DB_USER: root
+      QUIZARENA_DB_PASSWORD: quizarena-root
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Recette automatisée : joue une vraie partie à 2 joueurs contre l'API.
+  # Usage : docker compose --profile test run --rm smoke
+  smoke:
+    profiles: ["test"]
+    build: ./backend
+    command: ["php", "/app/tests/api_smoke.php", "http://api:8085/api/v1", "3"]
+    depends_on:
+      - api
+
+volumes:
+  db-data:

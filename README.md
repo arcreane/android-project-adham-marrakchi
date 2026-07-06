@@ -18,12 +18,38 @@ par l'API `/api/v1` (source de vérité unique, scores calculés côté serveur)
 
 | Composant | Version | Remarque |
 |-----------|---------|----------|
-| Java (JDK) | 17 ou + | testé avec JDK 23 |
+| Java (JDK) | 17 ou + | testé avec JDK 23 — requis dans tous les cas (client de bureau) |
 | Maven | 3.8 ou + | ou utiliser un IDE (IntelliJ) qui l'embarque |
-| PHP | 8.1 ou + | extension `pdo_mysql` activée (incluse dans Laragon/XAMPP) |
-| MySQL / MariaDB | 8.x / 10.x | port 3306 par défaut |
+| **Option A — Docker** | Docker Desktop | remplace PHP et MySQL, recommandé |
+| **Option B — manuel** | PHP 8.1+ (`pdo_mysql`) et MySQL 8.x | ex. Laragon/XAMPP |
 
-## Installation (poste propre)
+## Option A — Docker (recommandé : 2 commandes)
+
+Le backend complet (MySQL + API, schéma, 60 questions et comptes de
+démonstration inclus) démarre en une commande :
+
+```bash
+docker compose up -d --build      # API sur http://127.0.0.1:8085/api/v1
+cd frontend && mvn javafx:run     # client JavaFX (natif : application de bureau)
+```
+
+Vérification automatisée (joue une vraie partie à 2 joueurs dans un conteneur) :
+
+```bash
+docker compose --profile test run --rm smoke
+```
+
+Commandes utiles : `docker compose logs -f api` (journaux),
+`docker compose down` (arrêt), `docker compose down -v` (arrêt + base remise à zéro).
+La base est aussi consultable depuis l'hôte sur le port **3307**
+(root / `quizarena-root`).
+
+> Seul le backend est conteneurisé : le client JavaFX est une application
+> de bureau (fenêtres, clavier) et reste lancé nativement. Pour jouer depuis
+> un autre poste du réseau, pointez son `config.properties` sur
+> `http://IP_DU_SERVEUR:8085/api/v1`.
+
+## Option B — Installation manuelle (poste propre)
 
 ### 1. Base de données
 

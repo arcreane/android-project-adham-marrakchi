@@ -1,0 +1,9 @@
+# Les scripts shell exécutés dans les conteneurs Linux doivent rester en LF,
+# même après un clone sous Windows (core.autocrlf).
+*.sh text eol=lf
+*.sql text
+*.php text
+*.java text
+*.fxml text
+*.yml text
+*.yaml text
