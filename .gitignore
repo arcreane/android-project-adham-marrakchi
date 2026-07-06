@@ -1,0 +1,19 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Claude
+.claude/
+
+# Backend
+backend/logs/
+backend/config/config.local.php
+
+# Frontend build
+frontend/target/
+frontend/.mvn/wrapper/maven-wrapper.jar
+
+# OS
+Thumbs.db
+.DS_Store

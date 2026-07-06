@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.quizarena.client.controller.ResultsController"
+           styleClass="screen">
+    <VBox maxWidth="760" spacing="14" styleClass="card">
+        <padding>
+            <Insets top="24" right="32" bottom="24" left="32"/>
+        </padding>
+        <Label fx:id="roundResultTitle" text="Résultat de la manche" styleClass="title"/>
+        <Label fx:id="correctAnswerLabel" text="" wrapText="true" styleClass="correct-answer"/>
+        <Label fx:id="myResultLabel" text="" wrapText="true" styleClass="section"/>
+        <ListView fx:id="rankingList" prefHeight="340" VBox.vgrow="ALWAYS"/>
+        <Label text="La prochaine manche démarre automatiquement…" styleClass="status"/>
+    </VBox>
+</StackPane>

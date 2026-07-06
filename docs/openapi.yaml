@@ -1,0 +1,229 @@
+openapi: 3.0.3
+info:
+  title: QuizArena API
+  description: >
+    Contrat REST du POC QuizArena (PHP 8). Ce contrat est figé : la future
+    réécriture Spring Boot doit l'implémenter à l'identique.
+    Réponses en JSON UTF-8 : {"data": ...} en cas de succès,
+    {"error": {"code", "message"}, "requestId"} en cas d'échec.
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8085/api/v1
+
+tags:
+  - name: auth
+  - name: players
+  - name: games
+  - name: misc
+
+paths:
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Créer un compte joueur (F-01)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pseudo, email, password]
+              properties:
+                pseudo: { type: string, pattern: "^[A-Za-z0-9_-]{3,20}$" }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+      responses:
+        "201": { description: "Compte créé — {token, player}" }
+        "400": { description: "INVALID_PSEUDO / INVALID_EMAIL / WEAK_PASSWORD" }
+        "409": { description: "PSEUDO_TAKEN / EMAIL_TAKEN (insensible à la casse)" }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Obtenir un jeton (F-02)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [login, password]
+              properties:
+                login: { type: string, description: "pseudo ou email" }
+                password: { type: string }
+      responses:
+        "200": { description: "{token, player}" }
+        "401": { description: "BAD_CREDENTIALS" }
+        "403": { description: "BANNED" }
+
+  /players/me:
+    get:
+      tags: [players]
+      summary: Profil courant + 5 dernières parties (F-11)
+      responses:
+        "200": { description: "{player, lastGames[]}" }
+        "401": { description: "jeton manquant/expiré" }
+
+  /players/me/history:
+    get:
+      tags: [players]
+      summary: Historique des parties terminées
+      responses:
+        "200": { description: "[{gameId, endedAt, categoryName, finalRank, score, playersCount, durationSeconds}]" }
+
+  /leaderboard:
+    get:
+      tags: [misc]
+      summary: 20 meilleurs joueurs par score cumulé (F-12)
+      responses:
+        "200": { description: "[{rank, playerId, pseudo, scoreTotal, wins}]" }
+
+  /categories:
+    get:
+      tags: [misc]
+      summary: Catégories actives (pour la création de salle)
+      responses:
+        "200": { description: "[{id, name, iconUrl, colorHex}]" }
+
+  /games:
+    get:
+      tags: [games]
+      summary: Salles ouvertes du lobby (F-03)
+      responses:
+        "200": { description: "[{id, hostPseudo, categoryName, difficulty, playersCount, maxPlayers, roundsTotal}]" }
+    post:
+      tags: [games]
+      summary: Créer une salle (F-04) — le créateur devient hôte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categoryId, difficulty]
+              properties:
+                categoryId: { type: integer }
+                difficulty: { type: string, enum: [easy, medium, hard, mixed] }
+                maxPlayers: { type: integer, minimum: 2, maximum: 8, default: 8 }
+                rounds: { type: integer, minimum: 3, maximum: 10, default: 10 }
+      responses:
+        "201": { description: "état complet de la partie (GameState)" }
+        "409": { description: "ALREADY_IN_GAME" }
+
+  /games/{id}/join:
+    post:
+      tags: [games]
+      summary: Rejoindre une salle (F-05) — idempotent
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      responses:
+        "200": { description: "GameState" }
+        "404": { description: "GAME_NOT_FOUND" }
+        "409": { description: "GAME_FULL / GAME_ALREADY_STARTED / ALREADY_IN_GAME" }
+
+  /games/{id}/ready:
+    post:
+      tags: [games]
+      summary: Signaler l'état prêt / plus prêt (F-05)
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ready: { type: boolean, default: true }
+      responses:
+        "200": { description: "GameState" }
+
+  /games/{id}/start:
+    post:
+      tags: [games]
+      summary: Lancer la partie — hôte uniquement, 2 joueurs min., tous prêts (F-06)
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      responses:
+        "200": { description: "GameState (phase question, manche 1)" }
+        "403": { description: "NOT_HOST" }
+        "409": { description: "NOT_ENOUGH_PLAYERS / PLAYERS_NOT_READY / GAME_ALREADY_STARTED" }
+
+  /games/{id}/leave:
+    post:
+      tags: [games]
+      summary: Quitter la salle (avant) ou abandonner (pendant)
+      description: >
+        En attente : le joueur est retiré ; si l'hôte part, la salle est annulée.
+        En cours : le joueur passe en statut "left" ; s'il ne reste qu'un actif,
+        la partie se termine.
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      responses:
+        "200": { description: "{left: true}" }
+
+  /games/{id}/state:
+    get:
+      tags: [games]
+      summary: État complet — endpoint de polling (NF-03)
+      description: >
+        Fait aussi avancer la partie côté serveur (clôture de manche à
+        l'échéance, ouverture de la suivante, fin de partie).
+        phase ∈ waiting | question | results | finished | cancelled.
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      responses:
+        "200": { description: "GameState (players[], phase, deadlineAt, serverNow, lastRound, winner...)" }
+        "403": { description: "NOT_PARTICIPANT" }
+
+  /games/{id}/question:
+    get:
+      tags: [games]
+      summary: Question courante SANS la solution (F-07, NF-05)
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      responses:
+        "200": { description: "{roundNumber, questionId, text, choices[4], imageUrl, deadlineAt, serverNow, answered, yourChoice}" }
+        "409": { description: "NO_OPEN_ROUND / GAME_NOT_RUNNING" }
+
+  /games/{id}/answers:
+    post:
+      tags: [games]
+      summary: Soumettre l'unique réponse de la manche (F-08)
+      description: La correction et les points ne sont révélés qu'à la clôture.
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [questionId, choiceIndex]
+              properties:
+                questionId: { type: integer }
+                choiceIndex: { type: integer, minimum: 0, maximum: 3 }
+            example: { questionId: 42, choiceIndex: 2 }
+      responses:
+        "201": { description: "{accepted: true, receivedAt}" }
+        "400": { description: "INVALID_CHOICE" }
+        "403": { description: "PLAYER_ELIMINATED" }
+        "409": { description: "ALREADY_ANSWERED / DEADLINE_PASSED / WRONG_QUESTION" }
+
+  /games/{id}/scores:
+    get:
+      tags: [games]
+      summary: Classement + résultat de la dernière manche close (F-09)
+      parameters: [{ $ref: "#/components/parameters/gameId" }]
+      responses:
+        "200": { description: "{roundNumber, correctIndex, ranking[{pseudo, rank, score, lastPoints, lastCorrect, eliminatedThisRound...}]}" }
+
+components:
+  parameters:
+    gameId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Jeton opaque obtenu via /auth/login (validité 24 h)
+
+security:
+  - bearerAuth: []

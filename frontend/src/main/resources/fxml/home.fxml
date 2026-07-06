@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.quizarena.client.controller.HomeController"
+           styleClass="screen">
+    <VBox alignment="TOP_CENTER" maxWidth="760" spacing="18" styleClass="card">
+        <padding>
+            <Insets top="28" right="36" bottom="28" left="36"/>
+        </padding>
+        <HBox alignment="CENTER_LEFT" spacing="24">
+            <ImageView fx:id="avatarView" fitWidth="96" fitHeight="96" preserveRatio="true"/>
+            <VBox spacing="6">
+                <Label fx:id="pseudoLabel" text="…" styleClass="title"/>
+                <HBox spacing="28">
+                    <VBox alignment="CENTER">
+                        <Label fx:id="gamesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Parties" styleClass="stat-caption"/>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label fx:id="winsLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Victoires" styleClass="stat-caption"/>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label fx:id="totalLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Score cumulé" styleClass="stat-caption"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Jouer" onAction="#onPlay" styleClass="primary" prefWidth="180"/>
+                <Button text="Historique" onAction="#onHistory" prefWidth="180"/>
+                <Button text="Classement global" onAction="#onLeaderboard" prefWidth="180"/>
+                <Button text="Se déconnecter" onAction="#onLogout" prefWidth="180" styleClass="ghost"/>
+            </VBox>
+        </HBox>
+        <Label text="Dernières parties" styleClass="section"/>
+        <ListView fx:id="lastGamesList" prefHeight="260"/>
+    </VBox>
+</StackPane>

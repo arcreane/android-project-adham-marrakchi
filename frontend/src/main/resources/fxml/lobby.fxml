@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.quizarena.client.controller.LobbyController"
+           styleClass="screen">
+    <VBox maxWidth="860" spacing="14" styleClass="card">
+        <padding>
+            <Insets top="24" right="30" bottom="24" left="30"/>
+        </padding>
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <Label text="Lobby" styleClass="title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <ComboBox fx:id="categoryFilter" prefWidth="220"/>
+            <Button text="Rafraîchir" onAction="#onRefresh"/>
+            <Button text="Créer une salle" onAction="#onCreate" styleClass="primary"/>
+        </HBox>
+        <ListView fx:id="roomsList" prefHeight="380" VBox.vgrow="ALWAYS"/>
+        <BorderPane>
+            <left>
+                <Label fx:id="statusLabel" styleClass="status"/>
+            </left>
+            <right>
+                <HBox spacing="10">
+                    <Button text="Retour" onAction="#onBack" styleClass="ghost"/>
+                    <Button text="Rejoindre" onAction="#onJoin" styleClass="primary" prefWidth="140"/>
+                </HBox>
+            </right>
+        </BorderPane>
+    </VBox>
+</StackPane>
