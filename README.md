@@ -2,7 +2,6 @@
 
 # QuizArena — Battle Royale de culture générale
 
-Étudiants :
 - BENALLAL Ghizlane (@gh832) — Frontend
 - MARRAKCHI Adham (@AdaMakchi) — Backend
 
