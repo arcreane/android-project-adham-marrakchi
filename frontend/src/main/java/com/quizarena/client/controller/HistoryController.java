@@ -22,6 +22,10 @@ public class HistoryController implements Navigator.Screen {
     @FXML private TableColumn<Dto.HistoryEntry, Number> playersColumn;
     @FXML private TableColumn<Dto.HistoryEntry, String> durationColumn;
     @FXML private Label statusLabel;
+    /**
+ * Initialise le tableau d'historique et charge les parties terminées
+ * depuis l'API afin de les afficher à l'utilisateur.
+ */
 
     @FXML
     public void initialize() {
